@@ -27,6 +27,9 @@
 # send mail here
 #SBATCH --mail-user=srauschenbach@ucdavis.edu
 
+scenario=$1
+model=$2
+output_var=$3
 
-
-srun /home/smmrrr/miniconda3/envs/condaforge/bin/python3.10 TEM_Climate_Data/Preprocess_TEM.py $scenario $model $output_var
+echo TEM_Climate_Data/read_in_test_CMIP62TEM.py $scenario $model $output_var
+srun /home/smmrrr/miniconda3/envs/condaforge/bin/python3.10 TEM_Climate_Data/Preprocess_CMIP6_TEM.py $scenario $model $output_var

@@ -50,16 +50,16 @@ output_var = args.output_var
 #variable transformations done before formatting for TEM
 
 
-folder1 = 'TEM_Climate_Data/' #folder where climate data is 
+folder1 = 'TEM_Climate_Data/CMIP6/' #folder where climate data is 
 # folder2 = 'TEM__preprocess_examples' #folder for testing the script
 
    
 if (output_var == 'trange'): #subtract max and min temp
-
-    ds_historical_max = xr.open_dataset('~/'+folder1+'tasmax_'+scenario+'/'+model+'_concat.nc')
-    ds_future_max = xr.open_dataset('~/'+folder1+'tasmax_historical/'+model+'_concat.nc')
-    ds_historical_min = xr.open_dataset('~/'+folder1+'tasmin_'+scenario+'/'+model+'_concat.nc')
-    ds_future_min = xr.open_dataset('~/'+folder1+'tasmin_historical/'+model+'_concat.nc')
+# folder + variable + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' 
+    ds_historical_max = xr.open_dataset('~/'+folder1+'tasmax' + '_Amon_' + model + '_historical_r1i1p1f1.nc' )
+    ds_future_max = xr.open_dataset('~/'+folder1 +'tasmax' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
+    ds_historical_min = xr.open_dataset('~/'+folder1+'tasmin' + '_Amon_' + model + '_historical_r1i1p1f1.nc' )
+    ds_future_min = xr.open_dataset('~/'+folder1+ 'tasmin' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
 
     ds_max = ds_historical_max.combine_first(ds_future_max)
     ds_min = ds_historical_min.combine_first(ds_future_min)
@@ -72,10 +72,10 @@ if (output_var == 'trange'): #subtract max and min temp
 
 elif (output_var == 'wind'): #calc the ws using the u and v vectors
     
-    ds_historical_uas = xr.open_dataset('~/'+folder1+'uas_'+scenario+'/'+model+'_concat.nc')
-    ds_future_uas = xr.open_dataset('~/'+folder1+'uas_historical/'+model+'_concat.nc')
-    ds_historical_vas = xr.open_dataset('~/'+folder1+'vas_'+scenario+'/'+model+'_concat.nc')
-    ds_future_vas = xr.open_dataset('~/'+folder1+'vas_historical/'+model+'_concat.nc')
+    ds_historical_uas = xr.open_dataset('~/'+folder1+'uas' + '_Amon_' + model + '_historical_r1i1p1f1.nc')
+    ds_future_uas = xr.open_dataset('~/'+folder1 + 'uas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
+    ds_historical_vas = xr.open_dataset('~/'+folder1 + 'vas' + '_Amon_' + model + '_historical_r1i1p1f1.nc' )
+    ds_future_vas = xr.open_dataset('~/'+folder1 + 'vas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
 
     ds_uas = ds_historical_uas.combine_first(ds_future_uas)
     ds_vas = ds_historical_vas.combine_first(ds_future_vas)
@@ -87,10 +87,10 @@ elif (output_var == 'wind'): #calc the ws using the u and v vectors
     
 elif (output_var == 'vpr'): #calc the vapor pressure using specific humidity and surface pressure
     
-    ds_historical_huss = xr.open_dataset('~/'+folder1+'huss'+'_'+scenario+'/'+model+'_concat.nc')
-    ds_future_huss = xr.open_dataset('~/'+folder1+'huss'+'_historical/'+model+'_concat.nc')
-    ds_historical_ps = xr.open_dataset('~/'+folder1+'ps'+'_'+scenario+'/'+model+'_concat.nc')
-    ds_future_ps = xr.open_dataset('~/'+folder1+'ps'+'_historical/'+model+'_concat.nc')
+    ds_historical_huss = xr.open_dataset('~/'+folder1+ 'huss'+ '_Amon_' + model + '_historical_r1i1p1f1.nc')
+    ds_future_huss = xr.open_dataset('~/'+folder1+ 'huss' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
+    ds_historical_ps = xr.open_dataset('~/'+folder1+ 'ps'+ '_Amon_' + model + '_historical_r1i1p1f1.nc')
+    ds_future_ps = xr.open_dataset('~/'+folder1+ 'ps' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
 
     ds_huss = ds_historical_huss.combine_first(ds_future_huss)
 
@@ -113,8 +113,8 @@ else:
     output_var_match = TEM2CMIP_varnames[1, output_var_lookup] ##get cmip var
     cmip_var = re.sub('[\[\]\']', '', np.array_str(output_var_match)) #clean format of cmip var
 
-    ds_historical = xr.open_dataset('~/'+folder1+cmip_var+'_'+scenario+'/'+model+'_concat.nc')
-    ds_future = xr.open_dataset('~/'+folder1+cmip_var+'_historical/'+model+'_concat.nc')
+    ds_historical = xr.open_dataset('~/'+folder1+ cmip_var + '_Amon_' + model + '_historical_r1i1p1f1.nc' )
+    ds_future = xr.open_dataset('~/'+folder1+ cmip_var + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
     ds = ds_historical.combine_first(ds_future)
 
     ds['var_of_interest'] = ds[cmip_var]
