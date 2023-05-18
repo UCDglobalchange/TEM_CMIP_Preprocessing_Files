@@ -16,6 +16,12 @@ import metpy  # accessor needed to parse crs
 import calendar
 import argparse
 
+def custom_cftime(x): ##input CMIP6 dataset which has the column named 'time'
+    units, reference_date = x.time.attrs['units'].split(' since ') #get units and starting time
+    timedelta = pd.to_timedelta(x.time, unit = units)
+    x['time'] = pd.to_datetime(reference_date) + timedelta #reassigned these values to the time coordinate
+    print(units, reference_date) ##optional, used for debugging
+
 systime = time.ctime(time.time())
 print(f"\nStart time: {systime}")
 
@@ -56,10 +62,14 @@ folder1 = 'TEM_Climate_Data/CMIP6/' #folder where climate data is
    
 if (output_var == 'trange'): #subtract max and min temp
 # folder + variable + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' 
-    ds_historical_max = xr.open_dataset('~/'+folder1+'tasmax' + '_Amon_' + model + '_historical_r1i1p1f1.nc' )
-    ds_future_max = xr.open_dataset('~/'+folder1 +'tasmax' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
-    ds_historical_min = xr.open_dataset('~/'+folder1+'tasmin' + '_Amon_' + model + '_historical_r1i1p1f1.nc' )
-    ds_future_min = xr.open_dataset('~/'+folder1+ 'tasmin' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
+    ds_historical_max = xr.open_dataset('~/'+folder1+'tasmax' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_historical_max)
+    ds_future_max = xr.open_dataset('~/'+folder1 +'tasmax' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future_max)
+    ds_historical_min = xr.open_dataset('~/'+folder1+'tasmin' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_historical_min)
+    ds_future_min = xr.open_dataset('~/'+folder1+ 'tasmin' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future_min)
 
     ds_max = ds_historical_max.combine_first(ds_future_max)
     ds_min = ds_historical_min.combine_first(ds_future_min)
@@ -72,10 +82,14 @@ if (output_var == 'trange'): #subtract max and min temp
 
 elif (output_var == 'wind'): #calc the ws using the u and v vectors
     
-    ds_historical_uas = xr.open_dataset('~/'+folder1+'uas' + '_Amon_' + model + '_historical_r1i1p1f1.nc')
-    ds_future_uas = xr.open_dataset('~/'+folder1 + 'uas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
-    ds_historical_vas = xr.open_dataset('~/'+folder1 + 'vas' + '_Amon_' + model + '_historical_r1i1p1f1.nc' )
-    ds_future_vas = xr.open_dataset('~/'+folder1 + 'vas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
+    ds_historical_uas = xr.open_dataset('~/'+folder1+'uas' + '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
+    custom_cftime(ds_historical_uas)
+    ds_future_uas = xr.open_dataset('~/'+folder1 + 'uas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future_uas)
+    ds_historical_vas = xr.open_dataset('~/'+folder1 + 'vas' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_historical_vas)
+    ds_future_vas = xr.open_dataset('~/'+folder1 + 'vas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future_vas)
 
     ds_uas = ds_historical_uas.combine_first(ds_future_uas)
     ds_vas = ds_historical_vas.combine_first(ds_future_vas)
@@ -87,10 +101,14 @@ elif (output_var == 'wind'): #calc the ws using the u and v vectors
     
 elif (output_var == 'vpr'): #calc the vapor pressure using specific humidity and surface pressure
     
-    ds_historical_huss = xr.open_dataset('~/'+folder1+ 'huss'+ '_Amon_' + model + '_historical_r1i1p1f1.nc')
-    ds_future_huss = xr.open_dataset('~/'+folder1+ 'huss' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
-    ds_historical_ps = xr.open_dataset('~/'+folder1+ 'ps'+ '_Amon_' + model + '_historical_r1i1p1f1.nc')
-    ds_future_ps = xr.open_dataset('~/'+folder1+ 'ps' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
+    ds_historical_huss = xr.open_dataset('~/'+folder1+ 'huss'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
+    custom_cftime(ds_historical_huss)
+    ds_future_huss = xr.open_dataset('~/'+folder1+ 'huss' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future_huss)
+    ds_historical_ps = xr.open_dataset('~/'+folder1+ 'ps'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
+    custom_cftime(ds_historical_ps)
+    ds_future_ps = xr.open_dataset('~/'+folder1+ 'ps' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future_ps)
 
     ds_huss = ds_historical_huss.combine_first(ds_future_huss)
 
@@ -113,19 +131,15 @@ else:
     output_var_match = TEM2CMIP_varnames[1, output_var_lookup] ##get cmip var
     cmip_var = re.sub('[\[\]\']', '', np.array_str(output_var_match)) #clean format of cmip var
 
-    ds_historical = xr.open_dataset('~/'+folder1+ cmip_var + '_Amon_' + model + '_historical_r1i1p1f1.nc' )
-    ds_future = xr.open_dataset('~/'+folder1+ cmip_var + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' )
+    ds_historical = xr.open_dataset('~/'+folder1+ cmip_var + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_historical)
+    ds_future = xr.open_dataset('~/'+folder1+ cmip_var + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future)
     ds = ds_historical.combine_first(ds_future)
 
     ds['var_of_interest'] = ds[cmip_var]
     ds = ds.drop_vars([cmip_var])
 
-    
-### OLD FOR TESTING
-
-# ds_historical = xr.open_dataset('~/'+folder2+'/'+'tas_Amon_ACCESS1-0_historical_r1i1p1_185001-200512.nc')
-# ds_future = xr.open_dataset('~/'+folder2+'/'+'tas_Amon_ACCESS1-0_rcp85_r1i1p1_200601-210012.nc')
-# ds = ds_historical.combine_first(ds_future)
 
 ## the tem file that has the lat/lon we are regridding to
 TEM = pd.read_csv('~/TEM__preprocess_examples/igsmtbaselv0.5x0.5degree.glb'
@@ -145,7 +159,7 @@ ds = ds.sortby('lon')
 
 ds = ds.drop_dims('bnds')
 
-ds = ds.drop_vars('height')
+# ds = ds.drop_vars('height')
 
 
 ##some older files have different variables so we are dropping them
