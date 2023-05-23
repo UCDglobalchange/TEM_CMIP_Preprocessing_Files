@@ -32,7 +32,10 @@ parser.add_argument("model", help = '')
 parser.add_argument("output_var", help = '')
 args = parser.parse_args()
 
-
+##define directories
+cmip_data_folder = '/home/smmrrr/TEM_Climate_Data/CMIP6/' #folder where climate data is 
+data_checks_folder = '/home/smmrrr/TEM_Climate_Data/TEM_CMIP_Preprocessing_Files/Datachecks/'
+cleaned_data_folder = '/home/smmrrr/cleaned_climate_input/CMIP6/'
 
 ##create a lookup table that matches TEM var names to CMIP
 ##this is only for variables without any var transformation
@@ -56,19 +59,16 @@ output_var = args.output_var
 #variable transformations done before formatting for TEM
 
 
-folder1 = 'TEM_Climate_Data/CMIP6/' #folder where climate data is 
-# folder2 = 'TEM__preprocess_examples' #folder for testing the script
-
    
 if (output_var == 'trange'): #subtract max and min temp
 # folder + variable + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' 
-    ds_historical_max = xr.open_dataset('~/'+folder1+'tasmax' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
+    ds_historical_max = xr.open_dataset(cmip_data_folder+'tasmax' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_historical_max)
-    ds_future_max = xr.open_dataset('~/'+folder1 +'tasmax' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    ds_future_max = xr.open_dataset(cmip_data_folder +'tasmax' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_max)
-    ds_historical_min = xr.open_dataset('~/'+folder1+'tasmin' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
+    ds_historical_min = xr.open_dataset(cmip_data_folder+'tasmin' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_historical_min)
-    ds_future_min = xr.open_dataset('~/'+folder1+ 'tasmin' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    ds_future_min = xr.open_dataset(cmip_data_folder+ 'tasmin' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_min)
 
     ds_max = ds_historical_max.combine_first(ds_future_max)
@@ -82,13 +82,13 @@ if (output_var == 'trange'): #subtract max and min temp
 
 elif (output_var == 'wind'): #calc the ws using the u and v vectors
     
-    ds_historical_uas = xr.open_dataset('~/'+folder1+'uas' + '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
+    ds_historical_uas = xr.open_dataset(cmip_data_folder+'uas' + '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
     custom_cftime(ds_historical_uas)
-    ds_future_uas = xr.open_dataset('~/'+folder1 + 'uas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    ds_future_uas = xr.open_dataset(cmip_data_folder + 'uas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_uas)
-    ds_historical_vas = xr.open_dataset('~/'+folder1 + 'vas' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
+    ds_historical_vas = xr.open_dataset(cmip_data_folder + 'vas' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_historical_vas)
-    ds_future_vas = xr.open_dataset('~/'+folder1 + 'vas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    ds_future_vas = xr.open_dataset(cmip_data_folder + 'vas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_vas)
 
     ds_uas = ds_historical_uas.combine_first(ds_future_uas)
@@ -101,13 +101,13 @@ elif (output_var == 'wind'): #calc the ws using the u and v vectors
     
 elif (output_var == 'vpr'): #calc the vapor pressure using specific humidity and surface pressure
     
-    ds_historical_huss = xr.open_dataset('~/'+folder1+ 'huss'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
+    ds_historical_huss = xr.open_dataset(cmip_data_folder+ 'huss'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
     custom_cftime(ds_historical_huss)
-    ds_future_huss = xr.open_dataset('~/'+folder1+ 'huss' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    ds_future_huss = xr.open_dataset(cmip_data_folder+ 'huss' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_huss)
-    ds_historical_ps = xr.open_dataset('~/'+folder1+ 'ps'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
+    ds_historical_ps = xr.open_dataset(cmip_data_folder+ 'ps'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
     custom_cftime(ds_historical_ps)
-    ds_future_ps = xr.open_dataset('~/'+folder1+ 'ps' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    ds_future_ps = xr.open_dataset(cmip_data_folder+ 'ps' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_ps)
 
     ds_huss = ds_historical_huss.combine_first(ds_future_huss)
@@ -131,9 +131,9 @@ else:
     output_var_match = TEM2CMIP_varnames[1, output_var_lookup] ##get cmip var
     cmip_var = re.sub('[\[\]\']', '', np.array_str(output_var_match)) #clean format of cmip var
 
-    ds_historical = xr.open_dataset('~/'+folder1+ cmip_var + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
+    ds_historical = xr.open_dataset(cmip_data_folder+ cmip_var + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_historical)
-    ds_future = xr.open_dataset('~/'+folder1+ cmip_var + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    ds_future = xr.open_dataset(cmip_data_folder+ cmip_var + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future)
     ds = ds_historical.combine_first(ds_future)
 
@@ -142,9 +142,13 @@ else:
 
 
 ## the tem file that has the lat/lon we are regridding to
-TEM = pd.read_csv('~/TEM__preprocess_examples/igsmtbaselv0.5x0.5degree.glb'
-                 ,names = [ 'lon', 'lat', 'Variable', 'Area', 'Elev','Area_Name'])
+TEM = pd.read_csv(
+    '/home/smmrrr/TEM_Climate_Data/LULCC/support_files/cruHurtt3.2.1potmxcohrtsr_hurttlf.glb'
+     ,names = [ 'lon', 'lat', 'file', 'Area', 'num1','num2','num3', 'Area_Name'])
+# ds['var_of_interest'] = ds['tas']
 
+# ds_uas ## used for troubleshooting different lat / lon coords for access cm2
+TEM = TEM[[ 'lon', 'lat','Area' ,'Area_Name']]
 
 print('read in')
 
@@ -162,12 +166,13 @@ ds = ds.drop_dims('bnds')
 # ds = ds.drop_vars('height')
 
 
-##some older files have different variables so we are dropping them
+##some files have different variables so we are dropping them
 if(len(ds.data_vars) > 1):
     tt = re.compile(r'^(?!var_of_interest$).*$')
     var_to_remove = [i for i in ds.data_vars if tt.match(i)]
+    print(var_to_remove)
     ds = ds.drop_vars(var_to_remove) 
-
+###are some of these differences in height?
 
 #ds.plot.scatter(x = 'lon', y = 'lat') #, hue = 'Area_Name')
 #TEM.plot.scatter(x = 'lon', y = 'lat') #, hue = 'Area_Name')
@@ -223,7 +228,6 @@ TEM_xr = TEM_xr.assign_coords(lat=(TEM_xr.lat + 0.25))
 print('assign tem coords')
 
 ds_TEM = final.reindex_like(TEM_xr, method = 'nearest')
-#ds_TEM
 
 print('reindex done')
 
@@ -244,9 +248,25 @@ print('reindex done')
 #print(final['lat'])
 # print(ds_TEM['lat']) ## !!!is the -0.25 right on the edge cases of -90 and 90?!!!
 
+##### plot original and tem regridded time period average
+fig, axs = plt.subplots(nrows=2, figsize = (9, 9))
+plot1 = ds_TEM.mean(dim = ['year']).average.plot(ax = axs[0], cbar_kwargs={'label': 'Average '+output_var})
+plot2 = final.mean(dim = ['year']).average.sel( 
+    lat = slice(int(ds_TEM.lat.min()), int(ds_TEM.lat.max()))).plot(ax = axs[1], cbar_kwargs={'label': 'Average '+output_var})
+# cbar1 = plt.colorbar(plot1, ax=axs[0])
+# plot2.cbar.set_label(label = 'Average '+output_var, size = 12)
+plt.tight_layout()
+plt.savefig(data_checks_folder+'plots/lat_lon_average_'+model+'_'+output_var+'.pdf')
 
-# In[26]:
-
+####get average of all lat / lons over time
+orig_coords = final.mean(dim = ['lat', 'lon']).average.to_dataframe().reset_index()
+tem_coords = ds_TEM.mean(dim = ['lat', 'lon']).average.to_dataframe().reset_index()
+orig_coords = orig_coords.rename(columns={'average':'orig_average'})
+tem_coords = tem_coords.rename(columns={'average':'tem_average'})
+year_compare = orig_coords.merge(tem_coords)
+year_compare['model'] = model
+year_compare['output_var'] = output_var
+year_compare.to_csv(data_checks_folder+'time_average_'+model+'_'+output_var+'.csv')
 
 ## TEM is higher resolution than the climate data
 # 3012*720*280 #months x lon x lat 
@@ -304,7 +324,7 @@ ds_TEM2 = ds_TEM2[["lon", 'lat','var' ,'Area', 'year', 'sum', 'max', 'average'
 
 
 ##save as a csv
-ds_TEM2.to_csv('~/cleaned_climate_input/CMIP6/'+model+'_'+scenario+'_'+output_var+'.csv',index = False)
+ds_TEM2.to_csv(cleaned_data_folder+model+'_'+scenario+'_'+output_var+'.csv',index = False)
 
 
 
