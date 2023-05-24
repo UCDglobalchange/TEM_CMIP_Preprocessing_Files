@@ -55,6 +55,6 @@ dkms.conf
 *.txt
 
 # jupyter notebook checks
-.ipynb_checkpoints
+*.ipynb_checkpoints*
 
 Datachecks/*
