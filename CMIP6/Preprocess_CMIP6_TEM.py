@@ -58,7 +58,6 @@ output_var = args.output_var
 #there is different logic for each variable
 #variable transformations done before formatting for TEM
 
-
    
 if (output_var == 'trange'): #subtract max and min temp
 # folder + variable + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' 
@@ -125,7 +124,27 @@ elif (output_var == 'vpr'): #calc the vapor pressure using specific humidity and
     # ds['var_of_interest'] = ds[cmip_var]
     # ds = ds.drop_vars([cmip_var])
 
+elif (output_var == 'prec'): 
+    ds_historical = xr.open_dataset(cmip_data_folder+ 'pr'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
+    custom_cftime(ds_historical)
+    ds_future = xr.open_dataset(cmip_data_folder+ 'pr' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future)
+    ds = ds_historical.combine_first(ds_future)
 
+    ds['var_of_interest'] = ds['pr'] * 86400 * ds.time.dt.days_in_month ## go from kg/m2/s to mm
+    ds = ds.drop_vars(['pr'])
+
+elif (output_var == 'tair'): 
+    ds_historical = xr.open_dataset(cmip_data_folder+ 'tas'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
+    custom_cftime(ds_historical)
+    ds_future = xr.open_dataset(cmip_data_folder+ 'tas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
+    custom_cftime(ds_future)
+    ds = ds_historical.combine_first(ds_future)
+
+    ds['var_of_interest'] = ds['tas'] - 272.15 ##kelvin to celcius
+    ds = ds.drop_vars(['tas'])
+
+    
 else:
     output_var_lookup = np.where(TEM2CMIP_varnames == output_var)[1] ##look up location of tem var 
     output_var_match = TEM2CMIP_varnames[1, output_var_lookup] ##get cmip var
@@ -158,7 +177,6 @@ print('read in')
 ds = ds.assign_coords(lon=(((ds.lon + 180) % 360) - 180))
 # move lat / lon up .25 degrees to account for center vs. corner of grid cell
 
-
 ds = ds.sortby('lon')
 
 ds = ds.drop_dims('bnds')
@@ -173,9 +191,28 @@ if(len(ds.data_vars) > 1):
     print(var_to_remove)
     ds = ds.drop_vars(var_to_remove) 
 ###are some of these differences in height?
+if (scenario == 'ssp245') & (model == 'CanESM5') & (output_var == 'wind'):
+    rep2013 = ds.sel(time = "2013-12-07 12:00:00")
 
+
+    rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+    rep2013 = rep2013.expand_dims(dim='time')
+    rep2013=rep2013.assign_coords(time=rep2013['time'])
+    ds=ds.combine_first(rep2013)
+
+
+fix_missing_years = pd.DataFrame({'time':ds.time
+                                 ,'year':ds.time.dt.year
+                                 ,'month':ds.time.dt.month
+                                 ,'day':ds.time.dt.day})
+fix_missing_years['month_in_year'] = fix_missing_years.groupby('year')['month'].transform('nunique')
+fix_missing_years['month_count'] = fix_missing_years.groupby(['year','month'])['month'].transform('count')
+len(fix_missing_years)
+fix_times = fix_missing_years[fix_missing_years['month_in_year'] !=12]['time']
+print(np.array(fix_times))
 #ds.plot.scatter(x = 'lon', y = 'lat') #, hue = 'Area_Name')
 #TEM.plot.scatter(x = 'lon', y = 'lat') #, hue = 'Area_Name')
+ds['time'] = xr.where(ds.time.isin(fix_times), ds['time'] + np.timedelta64(15, 'D'), ds['time'])
 
 
 ##GET SUMMARY STATS
@@ -259,14 +296,15 @@ plt.tight_layout()
 plt.savefig(data_checks_folder+'plots/lat_lon_average_'+model+'_'+output_var+'.pdf')
 
 ####get average of all lat / lons over time
-orig_coords = final.mean(dim = ['lat', 'lon']).average.to_dataframe().reset_index()
+# xr.merge([ds_TEM.mean(dim = ['lat', 'lon']),
+orig_coords = final.sel( lat = slice(int(ds_TEM.lat.min()), int(ds_TEM.lat.max()))).mean(dim = ['lat', 'lon']).average.to_dataframe().reset_index()
 tem_coords = ds_TEM.mean(dim = ['lat', 'lon']).average.to_dataframe().reset_index()
 orig_coords = orig_coords.rename(columns={'average':'orig_average'})
 tem_coords = tem_coords.rename(columns={'average':'tem_average'})
 year_compare = orig_coords.merge(tem_coords)
 year_compare['model'] = model
 year_compare['output_var'] = output_var
-year_compare.to_csv(data_checks_folder+'time_average_'+model+'_'+output_var+'.csv')
+year_compare.to_csv(data_checks_folder+'time_average_'+model+'_'+output_var+'_'+scenario+'.csv')
 
 ## TEM is higher resolution than the climate data
 # 3012*720*280 #months x lon x lat 
@@ -278,7 +316,7 @@ year_compare.to_csv(data_checks_folder+'time_average_'+model+'_'+output_var+'.cs
 
 
 ####generate data from 1550, repeating the 10 decades of variability from 1850 to 1859
-for i in range(10, 310, 10):
+for i in range(10, 360, 10):
 
     rep_decade = ds_TEM.sel(year = slice(1850, 1859))
     rep_decade['year'] = rep_decade.year - i
@@ -321,10 +359,16 @@ ds_TEM2['var'] = ' ' + output_var + ' '
 ds_TEM2 = ds_TEM2[["lon", 'lat','var' ,'Area', 'year', 'sum', 'max', 'average'
          , 'min', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'
          , 'Nov', 'Dec', 'Area_Name']]
-
-
+##undo the quarter offset necessary for matching
+ds_TEM2['lon'] = ds_TEM2['lon'] - 0.25
+ds_TEM2['lat'] = ds_TEM2['lat'] - 0.25
+ds_TEM2['Area'] = ds_TEM2['Area'].astype(int)
+## organize as required by TEM
+ds_TEM2=ds_TEM2.sort_values(by = ['lon', 'lat', 'year'])
 ##save as a csv
-ds_TEM2.to_csv(cleaned_data_folder+model+'_'+scenario+'_'+output_var+'.csv',index = False)
+ds_TEM2.to_csv(cleaned_data_folder+model+'_'+scenario+'_'+output_var+'.csv'
+                           ,float_format='%.2f'
+                    ,index = False, header = False)
 
 
 

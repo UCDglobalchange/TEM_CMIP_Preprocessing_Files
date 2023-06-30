@@ -1,6 +1,6 @@
 #!/bin/bash
-cd CMIP6/
 output_vars=("trange" "wind" "tair" "prec" "nirr" "vpr") #list the variables to be processed
+# output_vars="prec" #list the variables to be processed
 
 # get list of CMIP6 models and scenarios
 
@@ -9,8 +9,8 @@ output_vars=("trange" "wind" "tair" "prec" "nirr" "vpr") #list the variables to 
 
 # for run in ${runs[@]}; do
     for output_var in ${output_vars[@]} ; do 
-        model="BCCxxCSM2xxMR"
-        scenario="ssp126"
+        model="CanESM5"
+        scenario="ssp245"
         # export $scenario
         # export $output_var
         # export $model
