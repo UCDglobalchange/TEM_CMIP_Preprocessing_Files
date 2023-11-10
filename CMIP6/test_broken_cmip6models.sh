@@ -1,6 +1,6 @@
 #!/bin/bash
-output_vars=("trange" "wind" "tair" "prec" "nirr" "vpr") #list the variables to be processed
-# output_vars="prec" #list the variables to be processed
+# output_vars=("trange" "wind" "tair" "prec" "nirr" "vpr") #list the variables to be processed
+output_vars="vpr" #list the variables to be processed
 
 # get list of CMIP6 models and scenarios
 

@@ -33,7 +33,7 @@ parser.add_argument("output_var", help = '')
 args = parser.parse_args()
 
 ##define directories
-cmip_data_folder = '/home/smmrrr/TEM_Climate_Data/CMIP6/' #folder where climate data is 
+cmip_data_folder = '/home/smmrrr/TEM_Climate_Data/CMIP6/netcdfs/' #folder where climate data is 
 data_checks_folder = '/home/smmrrr/TEM_Climate_Data/TEM_CMIP_Preprocessing_Files/Datachecks/'
 cleaned_data_folder = '/home/smmrrr/cleaned_climate_input/CMIP6/'
 
@@ -59,6 +59,7 @@ output_var = args.output_var
 #variable transformations done before formatting for TEM
 
    
+   
 if (output_var == 'trange'): #subtract max and min temp
 # folder + variable + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' 
     ds_historical_max = xr.open_dataset(cmip_data_folder+'tasmax' + '_Amon_' + model + '_historical_r1i1p1f1.nc' , decode_times=False)
@@ -69,7 +70,31 @@ if (output_var == 'trange'): #subtract max and min temp
     custom_cftime(ds_historical_min)
     ds_future_min = xr.open_dataset(cmip_data_folder+ 'tasmin' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_min)
+### some models are missing the last month of 2014 or 2100 so we are replacing with dec 2013 or 2099
+    if ds_historical_max.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical_max.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
 
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical_max=ds_historical_max.combine_first(rep2013)
+
+    if ds_historical_min.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical_min.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
+
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical_min=ds_historical_min.combine_first(rep2013)
+
+    if ds_future_max.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future_max.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future_max=ds_future_max.combine_first(rep2099)
+
+    if ds_future_min.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future_min.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future_min=ds_future_min.combine_first(rep2099)
+    
     ds_max = ds_historical_max.combine_first(ds_future_max)
     ds_min = ds_historical_min.combine_first(ds_future_min)
 
@@ -89,7 +114,31 @@ elif (output_var == 'wind'): #calc the ws using the u and v vectors
     custom_cftime(ds_historical_vas)
     ds_future_vas = xr.open_dataset(cmip_data_folder + 'vas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_vas)
+### some models are missing the last month of 2014 so we are replacing with dec 2013
+    if ds_historical_vas.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical_vas.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
 
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical_vas=ds_historical_vas.combine_first(rep2013)
+
+    if ds_historical_uas.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical_uas.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
+
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical_uas=ds_historical_uas.combine_first(rep2013)
+
+    if ds_future_uas.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future_uas.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future_uas=ds_future_uas.combine_first(rep2099)
+
+    if ds_future_vas.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future_vas.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future_vas=ds_future_vas.combine_first(rep2099)
+        
     ds_uas = ds_historical_uas.combine_first(ds_future_uas)
     ds_vas = ds_historical_vas.combine_first(ds_future_vas)
 
@@ -109,8 +158,40 @@ elif (output_var == 'vpr'): #calc the vapor pressure using specific humidity and
     ds_future_ps = xr.open_dataset(cmip_data_folder+ 'ps' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future_ps)
 
-    ds_huss = ds_historical_huss.combine_first(ds_future_huss)
+    ### some models are missing the last month of 2014 so we are replacing with dec 2013
+    if ds_historical_huss.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical_huss.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
 
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical_huss=ds_historical_huss.combine_first(rep2013)
+
+    if ds_historical_ps.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical_ps.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
+
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical_ps=ds_historical_ps.combine_first(rep2013)
+
+    if ds_future_huss.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future_huss.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future_huss=ds_future_huss.combine_first(rep2099)
+
+    if ds_future_ps.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future_ps.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future_ps=ds_future_ps.combine_first(rep2099)
+
+####one model (AWIxxCMxx1xx1xxMR) is starts at 1850 for pressure and air temp
+    if ds_historical_ps.time.min().dt.year.values > 1850:
+
+        rep_hist_min = ds_historical_ps.sel(time = slice("1851-01-16 12:00:00", "1851-12-16 12:00:00"))
+
+        rep_hist_min['time'] = rep_hist_min['time'] - np.timedelta64(365, 'D')
+        ds_historical_ps=ds_historical_ps.combine_first(rep_hist_min)
+
+    ds_huss = ds_historical_huss.combine_first(ds_future_huss)
     ds_ps = ds_historical_ps.combine_first(ds_future_ps)
 
     ds = xr.merge([ds_huss
@@ -119,30 +200,66 @@ elif (output_var == 'vpr'): #calc the vapor pressure using specific humidity and
 
     ds['var_of_interest'] = (ds['huss']*ds['ps'])/(0.622 + 0.378*ds['huss'])
     ds['var_of_interest'] = ds['var_of_interest']/100 ## Pa to HPa 
+
     ##using this equation for vapor pressure e = (qp)/(0.622 + 0.378q)
     #where q is specific humidity in kg/kg and p is atmospheric pressure in pa
     #https://cran.r-project.org/web/packages/humidity/vignettes/humidity-measures.html
     # ds['var_of_interest'] = ds[cmip_var]
     # ds = ds.drop_vars([cmip_var])
 
-elif (output_var == 'prec'): 
+elif (output_var == 'prec'): #calc the vapor pressure using specific humidity and surface pressure
     ds_historical = xr.open_dataset(cmip_data_folder+ 'pr'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
     custom_cftime(ds_historical)
     ds_future = xr.open_dataset(cmip_data_folder+ 'pr' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future)
+        ### some models are missing the last month of 2014 so we are replacing with dec 2013
+    if ds_historical.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
+
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical=ds_historical.combine_first(rep2013)
+
+    if ds_future.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future=ds_future.combine_first(rep2099)
+
     ds = ds_historical.combine_first(ds_future)
 
-    ds['var_of_interest'] = ds['pr'] * 86400 * ds.time.dt.days_in_month ## go from kg/m2/s to mm
+    ds['var_of_interest'] = ds['pr'] * 86400 * ds.time.dt.days_in_month
     ds = ds.drop_vars(['pr'])
 
-elif (output_var == 'tair'): 
+elif (output_var == 'tair'): #calc the vapor pressure using specific humidity and surface pressure
     ds_historical = xr.open_dataset(cmip_data_folder+ 'tas'+ '_Amon_' + model + '_historical_r1i1p1f1.nc', decode_times=False)
     custom_cftime(ds_historical)
     ds_future = xr.open_dataset(cmip_data_folder+ 'tas' + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future)
+            ### some models are missing the last month of 2014 so we are replacing with dec 2013
+    if ds_historical.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
+
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical=ds_historical.combine_first(rep2013)
+
+    if ds_future.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future=ds_future.combine_first(rep2099)
+
+####one model (AWIxxCMxx1xx1xxMR) is starts at 1850 for pressure and air temp    
+    if ds_historical.time.min().dt.year.values > 1850:
+
+        rep_hist_min = ds_historical.sel(time = slice("1851-01-16 12:00:00", "1851-12-16 12:00:00"))
+
+        rep_hist_min['time'] = rep_hist_min['time'] - np.timedelta64(365, 'D')
+        ds_historical=ds_historical.combine_first(rep_hist_min)
+
+
     ds = ds_historical.combine_first(ds_future)
 
-    ds['var_of_interest'] = ds['tas'] - 272.15 ##kelvin to celcius
+    ds['var_of_interest'] = ds['tas'] - 272.15
     ds = ds.drop_vars(['tas'])
 
     
@@ -155,6 +272,18 @@ else:
     custom_cftime(ds_historical)
     ds_future = xr.open_dataset(cmip_data_folder+ cmip_var + '_Amon_' + model + '_' + scenario + '_r1i1p1f1.nc' , decode_times=False)
     custom_cftime(ds_future)
+            ### some models are missing the last month of 2014 so we are replacing with dec 2013
+    if ds_historical.time.max().values < pd.Timestamp("2014-12-01 00:00:00"):
+        rep2013 = ds_historical.sel(time = slice("2013-12-01 12:00:00", "2013-12-31 12:00:00"))
+
+        rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
+        ds_historical=ds_historical.combine_first(rep2013)
+    if ds_future.time.max().values  < pd.Timestamp("2100-12-01 00:00:00"):
+
+        rep2099 = ds_future.sel(time = slice("2099-12-01 12:00:00", "2099-12-31 12:00:00"))
+        rep2099['time'] = rep2099['time'] + np.timedelta64(365, 'D')
+        ds_future=ds_future.combine_first(rep2099)
+    
     ds = ds_historical.combine_first(ds_future)
 
     ds['var_of_interest'] = ds[cmip_var]
@@ -163,7 +292,7 @@ else:
 
 ## the tem file that has the lat/lon we are regridding to
 TEM = pd.read_csv(
-    '/home/smmrrr/TEM_Climate_Data/LULCC/support_files/cruHurtt3.2.1potmxcohrtsr_hurttlf.glb'
+    '/home/smmrrr/land_data_processing/support_files/cruHurtt3.2.1potmxcohrtsr_hurttlf.glb'
      ,names = [ 'lon', 'lat', 'file', 'Area', 'num1','num2','num3', 'Area_Name'])
 # ds['var_of_interest'] = ds['tas']
 
@@ -192,14 +321,6 @@ if(len(ds.data_vars) > 1):
     print(var_to_remove)
     ds = ds.drop_vars(var_to_remove) 
 ###are some of these differences in height?
-if (scenario == 'ssp245') & (model == 'CanESM5') & (output_var == 'wind'):
-    rep2013 = ds.sel(time = "2013-12-07 12:00:00")
-
-
-    rep2013['time'] = rep2013['time'] + np.timedelta64(365, 'D')
-    rep2013 = rep2013.expand_dims(dim='time')
-    rep2013=rep2013.assign_coords(time=rep2013['time'])
-    ds=ds.combine_first(rep2013)
 
 
 fix_missing_years = pd.DataFrame({'time':ds.time
@@ -317,19 +438,21 @@ year_compare.to_csv(data_checks_folder+'time_average_'+model+'_'+output_var+'_'+
 
 
 ####generate data from 1550, repeating the 10 decades of variability from 1850 to 1859
-for i in range(10, 360, 10):
 
-    rep_decade = ds_TEM.sel(year = slice(1850, 1859))
+for i in range(20, 370, 20):
+
+    rep_decade = ds_TEM.sel(year = slice(1850, 1869))
     rep_decade['year'] = rep_decade.year - i
 
-    if i == 10:
+    if i == 20:
         rep_past = rep_decade
     else:
         rep_past = rep_past.combine_first(rep_decade)
 
-    print(i)
-       
+    # print(i)
+    
 #rep_past
+rep_past = rep_past.sel(year = slice(1500, 1849)) ## drop the 10 extra years
 
 ##merge on repeated past data
 ds_TEM = ds_TEM.combine_first(rep_past)
@@ -367,7 +490,23 @@ ds_TEM2['Area'] = ds_TEM2['Area'].astype(int)
 ## organize as required by TEM
 ds_TEM2=ds_TEM2.sort_values(by = ['lon', 'lat', 'year'])
 ##save as a csv
-ds_TEM2.to_csv(cleaned_data_folder+model+'_'+scenario+'_'+output_var+'.csv'
+# ds_TEM2.to_csv(cleaned_data_folder+model+'_'+scenario+'_'+output_var+'.csv'
+#                            ,float_format='%.2f'
+#                     ,index = False, header = False)
+
+ds_TEM2.to_csv(cleaned_data_folder+'all_time/'+model+'_'+scenario+'_'+output_var+'.csv'
+                           ,float_format='%.2f'
+                    ,index = False, header = False)
+
+ds_TEM2.loc[ds_TEM2['year'] > 2014].to_csv(cleaned_data_folder+'future/'+model+'_'+scenario+'_'+output_var+'.csv'
+                           ,float_format='%.2f'
+                    ,index = False, header = False)
+
+ds_TEM2.loc[ds_TEM2['year'].between(1851, 2014) ].to_csv(cleaned_data_folder+'historical/'+model+'_'+scenario+'_'+output_var+'.csv'
+                           ,float_format='%.2f'
+                    ,index = False, header = False)
+
+ds_TEM2.loc[ds_TEM2['year'] <= 1850].to_csv(cleaned_data_folder+'pre_data/'+model+'_'+scenario+'_'+output_var+'.csv'
                            ,float_format='%.2f'
                     ,index = False, header = False)
 

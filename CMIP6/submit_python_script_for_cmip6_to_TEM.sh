@@ -3,17 +3,14 @@
 # setting name of job
 #SBATCH -J cmip62TEM
 
-# setting home directory
-#SBATCH -D /home/smmrrr/
-
 # setting standard error output
-#SBATCH -e /home/smmrrr/slurm_log/sterror_%j.txt
+#SBATCH -e out/out_%j.txt
 
 # setting standard output
-#SBATCH -o /home/smmrrr/slurm_log/stdoutput_%j.txt
+#SBATCH -o out/out_%j.txt
 
 # setting medium priority
-#SBATCH -p bmh
+#SBATCH -p high2
 
 #SBATCH --nodes=1
 #SBATCH --mem=100G
@@ -25,7 +22,7 @@
 
 # mail alerts at beginning and end of job
 ##SBATCH --mail-type=BEGIN
-#SBATCH --mail-type=END
+#SBATCH --mail-type=FAIL
 
 # send mail here
 #SBATCH --mail-user=srauschenbach@ucdavis.edu
@@ -35,4 +32,5 @@ model=$2
 output_var=$3
 
 echo $scenario $model $output_var
-srun /home/smmrrr/miniconda3/envs/condaforge/bin/python3.10 TEM_Climate_Data/TEM_CMIP_Preprocessing_Files/CMIP6/Preprocess_CMIP6_TEM.py $scenario $model $output_var
+srun /home/smmrrr/miniconda3/envs/condaforge/bin/python3.10 /home/smmrrr/TEM_Climate_Data/TEM_CMIP_Preprocessing_Files/CMIP6/historical_split.py $scenario $model $output_var
+# srun /home/smmrrr/miniconda3/envs/condaforge/bin/python3.10 TEM_Climate_Data/TEM_CMIP_Preprocessing_Files/CMIP6/Preprocess_CMIP6_TEM.py $scenario $model $output_var

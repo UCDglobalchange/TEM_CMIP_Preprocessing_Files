@@ -3,7 +3,7 @@ output_vars=("trange" "wind" "tair" "prec" "nirr" "vpr") #list the variables to 
 # output_vars=("vpr")
 # get list of CMIP6 models and scenarios
 
-runs=$( find ~/TEM_Climate_Data/CMIP6 -type f | awk '{ sub(/.*Amon_/, ""); sub(/_r1i1p1f1\.nc/, ""); print $0 }' | awk '$0 !~ /historical/' | sort -u)
+runs=$( find /home/smmrrr/TEM_Climate_Data/CMIP6/netcdfs -type f | awk '{ sub(/.*Amon_/, ""); sub(/_r1i1p1f1\.nc/, ""); print $0 }' | awk '$0 !~ /historical/' | sort -u)
 echo ${runs[@]}
 
 for run in ${runs[@]}; do
