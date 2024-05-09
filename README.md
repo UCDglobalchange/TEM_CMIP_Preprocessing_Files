@@ -14,11 +14,11 @@ This repository provides scripts to process the monthly CMIP5/6 variables in net
 More information about these variables (can be found here)[https://pcmdi.llnl.gov/mips/cmip3/variableList.html]  
 
 These CMIP5/6 variables are then turned into the following variables in csv format: 
-- Diurnal temperature range (trange) K
+- Diurnal temperature range (trange) C
 - Windspeed at 10m (wind) m s-1
-- Vapor Pressure Deficit (vpr) Pa
-- Near surface air temperature (tair) K
-- Precipitation Flux (pred) mm day-1
+- Vapor Pressure Deficit (vpr) hPa
+- Near surface air temperature (tair) C
+- Precipitation Flux (precip) mm month-1
 - Surface downwelling shortwave flux in air (nirr) W m-2 
 
 Other supporting files:
