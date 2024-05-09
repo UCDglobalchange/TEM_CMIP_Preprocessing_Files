@@ -18,7 +18,7 @@ These CMIP5/6 variables are then turned into the following variables in csv form
 - Windspeed at 10m (wind) m s-1
 - Vapor Pressure Deficit (vpr) Pa
 - Near surface air temperature (tair) K
-- Precipitation Flux (pred) kg m-2 s-1
+- Precipitation Flux (pred) mm day-1
 - Surface downwelling shortwave flux in air (nirr) W m-2 
 
 Other supporting files:
